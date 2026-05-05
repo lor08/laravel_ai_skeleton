@@ -133,6 +133,16 @@ if ! ask_yn "Keep Laravel Boost MCP entry in .mcp.json?" "y"; then
     ENABLE_BOOST=n
 fi
 
+# ─── Laravel application skeleton ────────────────────────────────────────────
+
+INSTALL_LARAVEL=n
+LARAVEL_ALREADY_PRESENT=n
+if [ -f bootstrap/app.php ] && [ -d app ] && [ -f artisan ]; then
+    LARAVEL_ALREADY_PRESENT=y
+elif ask_yn "Install Laravel application skeleton (composer create-project laravel/laravel)?" "y"; then
+    INSTALL_LARAVEL=y
+fi
+
 # ─── Confirmation ───────────────────────────────────────────────────────────
 
 print_header "Summary"
@@ -150,6 +160,7 @@ cat <<EOF
   Mutation testing:    $ENABLE_MUTATION
   Runbook kept:        $ENABLE_RUNBOOK
   Laravel Boost:       $ENABLE_BOOST
+  Install Laravel:     $([ "$LARAVEL_ALREADY_PRESENT" = "y" ] && echo "already present, skip" || echo "$INSTALL_LARAVEL")
 EOF
 echo
 if ! ask_yn "Apply?" "y"; then
@@ -320,6 +331,61 @@ if [ "$ENABLE_BOOST" = "n" ]; then
     echo -e "${GREEN}✔${NC} Removed Laravel Boost integration"
 fi
 
+# ─── Install Laravel skeleton ───────────────────────────────────────────────
+
+print_header "Laravel skeleton"
+
+if [ "$LARAVEL_ALREADY_PRESENT" = "y" ]; then
+    echo -e "${GREEN}✔${NC} Laravel files already present (bootstrap/app.php found) — skipping installation"
+elif [ "$INSTALL_LARAVEL" = "y" ]; then
+    if ! command -v composer >/dev/null 2>&1; then
+        echo -e "${RED}✘${NC} composer not found in PATH — skipping Laravel installation"
+        echo "  After installing composer, run manually:"
+        echo "    composer create-project laravel/laravel _laravel_tmp --no-interaction --prefer-dist"
+        echo "    cp -rn _laravel_tmp/{app,bootstrap,config,database,public,resources,routes,artisan} ."
+        echo "    rm -rf _laravel_tmp"
+    else
+        TMP_DIR="_laravel_skeleton_tmp"
+        rm -rf "$TMP_DIR"
+
+        echo "Running: composer create-project laravel/laravel $TMP_DIR ..."
+        if composer create-project laravel/laravel "$TMP_DIR" \
+            --no-interaction --prefer-dist --quiet 2>&1; then
+
+            for src in app bootstrap config database public resources routes artisan; do
+                if [ -e "$TMP_DIR/$src" ]; then
+                    cp -rn "$TMP_DIR/$src" ./
+                fi
+            done
+
+            if [ "$PROJECT_NAMESPACE" != "App" ]; then
+                echo "Renaming namespace 'App' → '$PROJECT_NAMESPACE' in copied files..."
+                NS_BS=$(printf '%s' "$PROJECT_NAMESPACE" | sed 's/[\/&]/\\&/g')
+                find app bootstrap config database routes -type f -name '*.php' 2>/dev/null -print0 \
+                    | xargs -0 -r sed -i \
+                        -e "s|^namespace App;|namespace ${NS_BS};|g" \
+                        -e "s|^namespace App\\\\|namespace ${NS_BS}\\\\|g" \
+                        -e "s|^use App;|use ${NS_BS};|g" \
+                        -e "s|^use App\\\\|use ${NS_BS}\\\\|g" \
+                        -e "s| App\\\\| ${NS_BS}\\\\|g"
+            fi
+
+            rm -rf "$TMP_DIR"
+            echo -e "${GREEN}✔${NC} Laravel skeleton installed (app/, bootstrap/, config/, database/, public/, resources/, routes/, artisan)"
+            echo -e "${GREEN}✔${NC} Our composer.json / phpstan.neon / ecs.php / tests/ kept untouched"
+        else
+            rm -rf "$TMP_DIR"
+            echo -e "${RED}✘${NC} composer create-project failed — install Laravel manually later"
+        fi
+    fi
+else
+    echo -e "${YELLOW}⚠${NC} Laravel skeleton not installed (skipped by user)."
+    echo "  Install manually later if needed:"
+    echo "    composer create-project laravel/laravel _laravel_tmp --no-interaction --prefer-dist"
+    echo "    cp -rn _laravel_tmp/{app,bootstrap,config,database,public,resources,routes,artisan} ."
+    echo "    rm -rf _laravel_tmp"
+fi
+
 # ─── Git hooks ──────────────────────────────────────────────────────────────
 
 print_header "Git hooks"
@@ -346,14 +412,14 @@ echo "       git init && git add . && git commit -m 'Initial commit from skeleto
 echo "  ${BOLD}2.${NC} Install dependencies:"
 echo "       composer install"
 echo "       npm install            # if using a JS frontend"
-echo "  ${BOLD}3.${NC} Bring up the environment:"
+echo "  ${BOLD}3.${NC} Copy .env and generate app key:"
+echo "       cp .env.example .env"
 if [ "$USE_SAIL" = "y" ]; then
     echo "       ./vendor/bin/sail up -d"
-else
-    echo "       (start your $APP_CONTAINER container)"
 fi
-echo "  ${BOLD}4.${NC} Generate app key:"
-echo "       cp .env.example .env && $RUN_CMD artisan key:generate"
+echo "       $RUN_CMD artisan key:generate"
+echo "  ${BOLD}4.${NC} Run database migrations (if any):"
+echo "       $RUN_CMD artisan migrate"
 echo "  ${BOLD}5.${NC} Run quality gate:"
 echo "       composer all"
 echo
