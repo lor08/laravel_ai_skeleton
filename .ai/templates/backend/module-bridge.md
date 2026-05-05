@@ -42,12 +42,12 @@ app/ModuleBridge/
 │   ├── Contracts/
 │   ├── DTO/
 │   └── Services/
-├── WMSCore/
+├── Inventory/
 │   ├── Contracts/
 │   ├── DTO/
 │   ├── Services/
 │   └── Transformers/
-└── SchPure/
+└── Reporting/
     └── ...
 ```
 
