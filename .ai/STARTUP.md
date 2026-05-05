@@ -14,6 +14,10 @@
 |---|---|
 | архитектурой / новым модулем | `.ai/rules/backend/architecture.md` + `.ai/project/data-model.md` |
 | контроллерами / API | `.ai/rules/backend/code-style.md` + `.ai/templates/backend/controller.md` |
+| Eloquent / репозиториями / запросами | `.ai/rules/backend/eloquent.md` + `.ai/templates/backend/repository.md` |
+| Strategy / handler / роутинг типов | `.ai/templates/backend/handler.md` |
+| Между модулями (anticorruption) | `.ai/templates/backend/module-bridge.md` + ADR-0005 |
+| data-versioning (fillers) | `.ai/templates/backend/filler.md` |
 | фронтом | `.ai/rules/frontend/code-style.md` + `.ai/rules/frontend/architecture.md` |
 | тестами | `.ai/rules/backend/testing.md` или `.ai/rules/frontend/testing.md` |
 | ревью | `.ai/rules/review.md` |

@@ -85,3 +85,8 @@ grep -RIn '<TICKET-PREFIX>\|<MAIN-BRANCH>\|<RUN-CMD>\|<PROJECT-NAME>\|<PROJECT-N
 - **Mutation testing** — `composer require --dev pestphp/pest-plugin-mutate`. В CI — отдельный (медленный) job.
 - **Runbook** — заполнить `.ai/project/runbook.md` (если оперируешь продакшеном).
 - **Laravel Boost MCP** — в `.mcp.json` уже есть, нужно `composer require laravel/boost`.
+- **Fillers** — если используешь data-versioning через `sch/fillers` или похожий пакет — см. `.ai/templates/backend/filler.md`.
+
+## Существующий проект
+
+Этот документ — для **нового** проекта. Если внедряешь скелет в существующий Laravel-проект — см. **`ADOPTION.md`** (3 уровня внедрения с rollout-планом).

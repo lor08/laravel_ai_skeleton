@@ -52,6 +52,7 @@
 | Refactoring Techniques | `.ai/rules/refactoring-techniques.md` |
 | Backend Style | `.ai/rules/backend/code-style.md` |
 | Backend Architecture | `.ai/rules/backend/architecture.md` |
+| Backend Eloquent | `.ai/rules/backend/eloquent.md` |
 | Backend Testing (Pest) | `.ai/rules/backend/testing.md` |
 | Frontend Style | `.ai/rules/frontend/code-style.md` |
 | Frontend Architecture | `.ai/rules/frontend/architecture.md` |
@@ -61,6 +62,7 @@
 | Gotchas | `.ai/project/gotchas.md` |
 | ADR | `.ai/adr/README.md` |
 | Templates | `.ai/templates/` |
+| Adoption (existing project) | `ADOPTION.md` |
 | Memory (между сессиями) | `.ai/memory.md` |
 
 ## Stack

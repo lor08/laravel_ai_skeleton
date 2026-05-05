@@ -74,32 +74,16 @@ return [
 
 ## Bridge между модулями
 
-Если модулю A нужны данные от модуля B — **через `Contract`** в `App\Contracts\` (общая папка), а не прямой импорт внутренностей B.
+Если модулю A нужны данные от модуля B — **через Anticorruption Layer**: отдельная папка `app/ModuleBridge/<Source>/` с контрактом и DTO в языке потребителя.
 
-```php
-// app/Contracts/CustomerLookup.php (общий контракт)
-interface CustomerLookup
-{
-    public function findById(int $id): ?CustomerSnapshot;
-}
+См. отдельный шаблон **`.ai/templates/backend/module-bridge.md`** и **ADR-0005**.
 
-// app/Modules/Customers/Bridges/CustomerBridge.php (реализация)
-final readonly class CustomerBridge implements CustomerLookup
-{
-    public function __construct(
-        private CustomerRepository $repository,
-    ) {}
+Кратко:
+- Контракт + DTO в `app/ModuleBridge/<Source>/` — то, что видит потребитель
+- Реализация в том же `app/ModuleBridge/<Source>/Services/` — переводит модели/DTO модуля-поставщика
+- Модуль-потребитель **не импортирует** ничего из `app/Modules/<Source>/*`, только из `app/ModuleBridge/<Source>/*`
 
-    public function findById(int $id): ?CustomerSnapshot
-    {
-        $customer = $this->repository->find($id);
-
-        return $customer ? CustomerSnapshot::fromModel($customer) : null;
-    }
-}
-```
-
-Модуль Orders импортирует только `App\Contracts\CustomerLookup` и `App\DTO\CustomerSnapshot`, не видит внутренностей `App\Modules\Customers\*`.
+Контролируется arch-тестом — см. `module-bridge.md`.
 
 ## Architecture test
 

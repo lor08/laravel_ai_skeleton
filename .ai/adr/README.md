@@ -38,6 +38,8 @@ ADR — короткие записи об **архитектурных реше
 | 0002 | Repository pattern for data access | Accepted |
 | 0003 | Final readonly classes by default | Accepted |
 | 0004 | Laravel Boost MCP for AI workflows | Accepted |
+| 0005 | Module Bridge as Anticorruption Layer | Accepted |
+| 0006 | Existing project adoption strategy | Accepted |
 
 *(Стартовые ADR можно переписать или удалить под нужды проекта в `init.sh`.)*
 
@@ -49,5 +51,7 @@ ADR — короткие записи об **архитектурных реше
 | 0002 | Repository pattern for data access | Accepted | YYYY-MM-DD |
 | 0003 | Final readonly classes by default | Accepted | YYYY-MM-DD |
 | 0004 | Laravel Boost MCP for AI workflows | Accepted | YYYY-MM-DD |
+| 0005 | Module Bridge as Anticorruption Layer | Accepted | YYYY-MM-DD |
+| 0006 | Existing project adoption strategy | Accepted | YYYY-MM-DD |
 
 *(Обновляй индекс при каждом новом ADR.)*

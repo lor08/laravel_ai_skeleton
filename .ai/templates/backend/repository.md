@@ -128,5 +128,11 @@ public function paidInLastWeek(): Collection
 - Возврат — Model / Collection / DTO / Paginator
 - N+1 предотвращать — `with()`, `withCount()`
 - Magic strings (`'status'`) — заменять enum/const
-- **Нет:** HTTP, бизнес-исключений (только NotFound-типа)
+- **Нет:** HTTP, бизнес-исключений (только NotFound-типа), local/global scopes (см. `.ai/rules/backend/eloquent.md`)
 - **Есть:** Eloquent, Builder, DB::transaction *(если транзакция чисто DB-уровневая)*
+
+## См. также
+
+- `.ai/rules/backend/eloquent.md` — `tap`, `when`, custom Builder, eager loading, query optimization
+- `.ai/templates/backend/dto.md` — DTO для read-моделей и параметров
+- ADR-0002 — почему вообще Repository pattern

@@ -215,6 +215,10 @@ app/Modules/{ModuleName}/
 
 ADR при переходе на модули — обязательно.
 
+### Bridge между модулями
+
+Когда модулей больше двух и они начинают друг на друга ссылаться — заводим **`app/ModuleBridge/`** (Anticorruption Layer). Подробнее — `.ai/templates/backend/module-bridge.md` и ADR-0005.
+
 ## Architecture tests (Pest)
 
 См. `.ai/rules/backend/testing.md` и `tests/Architecture/`. Pest arch-тесты блокируют CI при нарушении границ слоёв и стиля.
