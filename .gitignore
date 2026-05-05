@@ -1,0 +1,36 @@
+/.phpunit.cache
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+.env
+.env.backup
+.env.production
+.phpactions.cache
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+
+# AI workspace artifacts (per-session, not committed)
+.ai/temp/
+.ai/tasks/*-snapshot.json
+
+# Claude Code local overrides
+.claude/settings.local.json
+
+# Codex local overrides
+.codex/local.toml
+
+# JetBrains AI local files
+.aiassistant/local/

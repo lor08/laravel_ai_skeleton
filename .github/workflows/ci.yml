@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: [<MAIN-BRANCH>]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  style:
+    name: Style (ECS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - run: vendor/bin/ecs check
+
+  analyse:
+    name: Static analysis (PHPStan + Larastan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress
+
+  arch:
+    name: Architecture (Pest arch)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - run: vendor/bin/pest --arch
+
+  types:
+    name: Type coverage (>= 95%)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - run: vendor/bin/pest --type-coverage --min=95
+
+  test:
+    name: Tests (Pest)
+    runs-on: ubuntu-latest
+    needs: [style, analyse, arch]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          coverage: pcov
+      - uses: ramsey/composer-install@v3
+      - name: Copy .env
+        run: cp .env.example .env
+      - name: Generate app key
+        run: php artisan key:generate
+      - name: Run tests
+        run: vendor/bin/pest --parallel
+
+  frontend-lint:
+    name: Frontend lint + arch
+    runs-on: ubuntu-latest
+    if: hashFiles('package.json') != ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - name: dependency-cruiser (architecture)
+        run: npm run arch
+        if: hashFiles('.dependency-cruiser.cjs') != ''
+
+  frontend-test:
+    name: Frontend tests (Vitest)
+    runs-on: ubuntu-latest
+    if: hashFiles('package.json') != ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test
+
+  # Optional jobs — uncomment if enabled by init.sh
+  # mutation:
+  #   name: Mutation testing
+  #   runs-on: ubuntu-latest
+  #   needs: [test]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: shivammathur/setup-php@v2
+  #       with:
+  #         php-version: '8.5'
+  #         tools: composer:v2
+  #         coverage: pcov
+  #     - uses: ramsey/composer-install@v3
+  #     - run: vendor/bin/pest --mutate --min-msi=70 --parallel
+
+  # rector:
+  #   name: Rector dry-run
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: shivammathur/setup-php@v2
+  #       with:
+  #         php-version: '8.5'
+  #         tools: composer:v2
+  #         coverage: none
+  #     - uses: ramsey/composer-install@v3
+  #     - run: vendor/bin/rector process --dry-run

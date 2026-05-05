@@ -1,0 +1,91 @@
+# GitLab CI example.
+# Rename to `.gitlab-ci.yml` to activate (or keep next to GitHub Actions and use both).
+
+image: php:8.5-cli
+
+stages:
+  - style
+  - analyse
+  - arch
+  - types
+  - test
+  - frontend
+
+variables:
+  COMPOSER_ALLOW_SUPERUSER: "1"
+  COMPOSER_NO_INTERACTION: "1"
+  COMPOSER_CACHE_DIR: "$CI_PROJECT_DIR/.composer-cache"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - vendor/
+    - node_modules/
+    - .composer-cache/
+
+before_script:
+  - apt-get update && apt-get install -y git unzip libonig-dev libxml2-dev libzip-dev libpq-dev libsqlite3-dev
+  - docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring zip
+  - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+  - composer install --no-progress --prefer-dist --optimize-autoloader
+
+style:
+  stage: style
+  script:
+    - vendor/bin/ecs check
+
+analyse:
+  stage: analyse
+  script:
+    - vendor/bin/phpstan analyse --memory-limit=512M --no-progress
+
+arch:
+  stage: arch
+  script:
+    - vendor/bin/pest --arch
+
+types:
+  stage: types
+  script:
+    - vendor/bin/pest --type-coverage --min=95
+
+test:
+  stage: test
+  script:
+    - cp .env.example .env
+    - php artisan key:generate
+    - vendor/bin/pest --parallel
+
+frontend-lint:
+  stage: frontend
+  image: node:22-alpine
+  before_script: []
+  rules:
+    - exists:
+        - package.json
+  script:
+    - npm ci
+    - npm run lint
+    - if [ -f .dependency-cruiser.cjs ]; then npm run arch; fi
+
+frontend-test:
+  stage: frontend
+  image: node:22-alpine
+  before_script: []
+  rules:
+    - exists:
+        - package.json
+  script:
+    - npm ci
+    - npm run test
+
+# Optional — uncomment after init.sh enables them
+# mutation:
+#   stage: test
+#   script:
+#     - vendor/bin/pest --mutate --min-msi=70 --parallel
+
+# rector:
+#   stage: analyse
+#   script:
+#     - vendor/bin/rector process --dry-run

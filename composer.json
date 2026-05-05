@@ -1,0 +1,113 @@
+{
+    "name": "<PROJECT-NAME>",
+    "type": "project",
+    "description": "Laravel project bootstrapped from laravel_ai_skeleton.",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.5",
+        "laravel/framework": "^13.0",
+        "laravel/tinker": "^2.10"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.23",
+        "laravel/boost": "^2.0",
+        "laravel/pail": "^1.2",
+        "laravel/pint": "^1.18",
+        "laravel/sail": "^1.41",
+        "larastan/larastan": "^3.0",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.6",
+        "pestphp/pest": "^3.7",
+        "pestphp/pest-plugin-arch": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0",
+        "pestphp/pest-plugin-type-coverage": "^3.0",
+        "phpstan/phpstan": "^2.0",
+        "symplify/easy-coding-standard": "^12.5"
+    },
+    "suggest": {
+        "rector/rector": "Run `composer require --dev rector/rector driftingly/rector-laravel` then enable `composer fix:rector`.",
+        "pestphp/pest-plugin-mutate": "Mutation testing — run `composer require --dev pestphp/pest-plugin-mutate` then `composer mutate`."
+    },
+    "autoload": {
+        "psr-4": {
+            "<PROJECT-NAMESPACE>\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ],
+
+        "style":   "<RUN-CMD> ecs check --fix",
+        "style:check": "<RUN-CMD> ecs check",
+        "analyse": "<RUN-CMD> phpstan analyse --memory-limit=512M",
+        "test":    "<RUN-CMD> pest --parallel",
+        "arch":    "<RUN-CMD> pest --arch",
+        "types":   "<RUN-CMD> pest --type-coverage --min=95",
+        "mutate":  "<RUN-CMD> pest --mutate --min-msi=70",
+
+        "fix": [
+            "@style"
+        ],
+        "fix:rector": "<RUN-CMD> rector process",
+
+        "all": [
+            "@style:check",
+            "@analyse",
+            "@arch",
+            "@types",
+            "@test"
+        ],
+
+        "ide": [
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta",
+            "@php artisan ide-helper:models -W"
+        ]
+    },
+    "scripts-descriptions": {
+        "style":      "Run ECS auto-fix on PHP files",
+        "style:check": "Run ECS check (no fix) — used in CI",
+        "analyse":    "Run PHPStan + Larastan static analysis",
+        "test":       "Run Pest test suite (parallel)",
+        "arch":       "Run only architecture tests (Pest arch plugin)",
+        "types":      "Check type coverage (>= 95%)",
+        "mutate":     "Run mutation testing (requires pest-plugin-mutate)",
+        "fix":        "Apply auto-fixes — ECS by default, add Rector via fix:rector",
+        "fix:rector": "Run Rector — requires `composer require --dev rector/rector driftingly/rector-laravel`",
+        "all":        "Full quality gate: style + analyse + arch + types + test (used in CI)"
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

@@ -1,0 +1,43 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    },
+    "mysql": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-mysql"
+      ],
+      "env": {
+        "MYSQL_HOST": "127.0.0.1",
+        "MYSQL_PORT": "3306",
+        "MYSQL_USER": "sail",
+        "MYSQL_PASS": "password",
+        "MYSQL_DB": "<PROJECT-NAME>"
+      }
+    },
+    "laravel-boost": {
+      "type": "stdio",
+      "command": "<RUN-CMD>",
+      "args": [
+        "artisan",
+        "boost:mcp"
+      ]
+    }
+  }
+}

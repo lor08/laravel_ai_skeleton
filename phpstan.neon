@@ -1,0 +1,31 @@
+includes:
+    - phpstan-baseline.neon
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: max
+
+    paths:
+        - app
+        - config
+        - database
+        - routes
+        - tests
+
+    excludePaths:
+        - vendor
+        - storage
+        - bootstrap/cache
+        - public/build
+        - node_modules
+
+    ignoreErrors:
+        # Allow PHPStan to verify Eloquent dynamic returns through Larastan
+        - identifier: missingType.iterableValue
+          paths:
+              - database/factories
+              - database/seeders
+
+    treatPhpDocTypesAsCertain: false
+    checkOctaneCompatibility: true
+    checkModelProperties: true

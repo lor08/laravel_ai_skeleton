@@ -1,0 +1,9 @@
+# PHPStan baseline for legacy or third-party-related issues.
+# Keep this list short — every entry is a debt to repay.
+#
+# Usage:
+#   <RUN-CMD> phpstan analyse --generate-baseline
+#
+# Add entries here only when they cannot be reasonably fixed yet.
+parameters:
+    ignoreErrors: []
