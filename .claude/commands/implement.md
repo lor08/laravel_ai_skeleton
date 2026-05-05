@@ -17,19 +17,7 @@ argument-hint: [ticket]
 
 3. **Прочитай текущее состояние** всех затронутых файлов.
 
-4. **Составь план реализации** в порядке зависимостей (см. `.ai/rules/workflow.md`):
-   1. Migrations
-   2. Models / Enums / DTOs
-   3. Contracts
-   4. Repositories
-   5. Services
-   6. FormRequests / Resources
-   7. Controllers / Console commands
-   8. Jobs / Events / Listeners
-   9. Frontend
-   10. Lang / Routes
-   11. Tests
-   12. Cleanup
+4. **Составь план реализации** — следуй порядку из `.ai/rules/workflow.md` секция «Порядок зависимостей при реализации». Не дублируй список здесь, читай оттуда. Адаптируй под конкретные принятые решения.
 
 5. **Покажи план пользователю → дождись `ок`.**
 

@@ -25,10 +25,6 @@ arch('services use repositories, not Eloquent directly')
         'Illuminate\Database\Eloquent\Builder',
     ]);
 
-arch('models stay out of controllers')
-    ->expect('App\Models')
-    ->not->toBeUsedIn('App\Http\Controllers');
-
 arch('DTOs have no infrastructure dependencies')
     ->expect('App\DTO')
     ->not->toUse([

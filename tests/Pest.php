@@ -14,11 +14,15 @@ uses(RefreshDatabase::class)->in('Feature');
 | Architecture configuration
 |--------------------------------------------------------------------------
 |
-| Globally ignored namespaces for arch tests. These are typically Laravel
-| internals or test infrastructure that we don't want to assert against.
+| Built-in arch presets:
+|   - php()      — bans dd/die/var_dump/print_r/eval/exit etc.
+|   - security() — bans unsafe functions (eval, exec, shell_exec, ...).
+|   - laravel()  — opinionated Laravel-conventions; OFF by default because
+|                  it can overlap with our own tests in tests/Architecture/
+|                  (LayerBoundariesTest, NamingConventionsTest).
+|                  Re-enable explicitly with arch()->preset()->laravel(); if needed.
 |
 */
-arch()->preset()->laravel();
 arch()->preset()->php();
 arch()->preset()->security();
 
@@ -30,14 +34,3 @@ arch()->preset()->security();
 expect()->extend('toBeMoney', function () {
     return $this->toBeInt()->toBeGreaterThanOrEqual(0);
 });
-
-/*
-|--------------------------------------------------------------------------
-| Functions
-|--------------------------------------------------------------------------
-*/
-function something(): mixed
-{
-    // Add helpers used across multiple tests here.
-    return null;
-}

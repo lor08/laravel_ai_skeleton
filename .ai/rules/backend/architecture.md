@@ -22,169 +22,54 @@ Database
 
 ## Контроллер
 
-- `final class`
-- Один публичный метод на endpoint (Single Action) или RESTful resource
-- Внутри метода: `$dto = $request->validated()` → `$service->doSomething($dto)` → `return ...`
-- Никаких `DB::`, `Eloquent::`, `Cache::`, бизнес-логики, math
-- Авторизация — в FormRequest через `authorize()` или через `$this->authorize()`
-
-```php
-final class CreateOrderController extends Controller
-{
-    public function __invoke(
-        CreateOrderRequest $request,
-        CreateOrderService $service,
-    ): OrderResource {
-        $dto = CreateOrderDTO::fromRequest($request);
-        $order = $service->create($dto);
-
-        return OrderResource::make($order);
-    }
-}
-```
+- `final class`, расширяет `App\Http\Controllers\Controller`
+- Single Action (`__invoke`) или RESTful resource
+- Внутри метода: `$dto = $request->validated()` → `$service->doSomething($dto)` → `return Resource::make(...)`
+- Никаких `DB::`, `Eloquent::`, `Cache::`, бизнес-логики
+- Авторизация — в FormRequest через `authorize()` или middleware
+- Шаблон: `.ai/templates/backend/controller.md`
 
 ## FormRequest
 
-- `final class`
-- `authorize()` — проверка прав
-- `rules()` — валидация
-- Опционально: метод `toDto(): SomeDTO` для прозрачного перехода
-
-```php
-final class CreateOrderRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
-        return Auth::user()?->can('order.create') ?? false;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function rules(): array
-    {
-        return [
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
-            'items'       => ['required', 'array', 'min:1'],
-            'items.*.id'  => ['required', 'integer'],
-        ];
-    }
-
-    public function toDto(): CreateOrderDTO
-    {
-        return CreateOrderDTO::fromArray($this->validated());
-    }
-}
-```
+- `final class`, расширяет `Illuminate\Foundation\Http\FormRequest`
+- `authorize()` — реальная проверка, не `return true`
+- `rules()` — все правила валидации; enum через `Rule::enum(...)`
+- Опционально: `toDto()` мост для сервиса
+- Шаблон: `.ai/templates/backend/form-request.md`
 
 ## Service
 
-- `final readonly class`
-- Конструктор — все зависимости (DI)
+- `final readonly class`, DI всех зависимостей через конструктор
 - Один сервис = одна бизнес-операция (или близкая группа)
-- Транзакции внутри сервиса, не в контроллере
-- Бросает `DomainException` (свой) при бизнес-ошибках
-
-```php
-final readonly class CreateOrderService
-{
-    public function __construct(
-        private OrderRepository $orders,
-        private CustomerRepository $customers,
-        private DispatcherContract $events,
-    ) {}
-
-    public function create(CreateOrderDTO $dto): Order
-    {
-        $customer = $this->customers->find($dto->customerId)
-            ?? throw new CustomerNotFoundException($dto->customerId);
-
-        return DB::transaction(function () use ($dto, $customer) {
-            $order = $this->orders->create($dto, $customer);
-            $this->events->dispatch(new OrderCreated($order));
-            return $order;
-        });
-    }
-}
-```
+- Транзакции — в сервисе через `DB::transaction(...)`, не в контроллере
+- Свои `DomainException` для бизнес-ошибок
+- Без прямого Eloquent (через Repository), HTTP request, View
+- Шаблон: `.ai/templates/backend/service.md`
 
 ## Repository
 
 - `final readonly class`
-- Доступ к БД — **только** здесь
-- Возвращает Models, Collections, или DTO/VO для read-моделей
-- Кастомный Builder — если запросы сложные и переиспользуются
-
-```php
-final readonly class OrderRepository
-{
-    public function find(int $id): ?Order
-    {
-        return Order::query()->find($id);
-    }
-
-    public function create(CreateOrderDTO $dto, Customer $customer): Order
-    {
-        return Order::query()->create([
-            'customer_id' => $customer->id,
-            'number'      => $dto->generateNumber(),
-            'total'       => $dto->total(),
-        ]);
-    }
-
-    /**
-     * @return Collection<int, Order>
-     */
-    public function paidIn(DatePeriod $period): Collection
-    {
-        return Order::query()
-            ->where('status', OrderStatus::Paid)
-            ->whereBetween('paid_at', [$period->start, $period->end])
-            ->get();
-    }
-}
-```
+- **Единственное** место для Eloquent / DB / Query Builder
+- Имена методов — по бизнес-намерению (`paidForCustomer`), не по технике (`whereStatusAndCustomerId`)
+- Возврат — Model / Collection / DTO / Paginator
+- N+1 предотвращать — `with()`, `withCount()`
+- Шаблон: `.ai/templates/backend/repository.md`
+- Стиль запросов: `.ai/rules/backend/eloquent.md`
 
 ## Model
 
-- Eloquent — **только** маппинг таблицы
-- `$fillable`, `$casts`, relations
+- Eloquent — **только** маппинг таблицы (`$fillable`, `$casts`, relations)
 - Без бизнес-логики (не `->confirm()`, не `->calculateTotal()`)
-- Кастомные scopes — допустимы
-- Геттеры/property hooks для производных полей — допустимы (PHP 8.4+)
+- Без local/global scopes (см. `.ai/rules/backend/eloquent.md`)
+- Property hooks для производных полей (PHP 8.4+) — допустимы
 
 ## DTO / Value Object
 
 - `final readonly class` с typed properties в конструкторе
-- Statической фабрики для частых случаев (`fromRequest`, `fromArray`, `fromModel`)
-- Без зависимостей (никаких `Service`, никаких `DB`)
-- Опционально — `toArray(): array<string, mixed>` для сериализации
-
-```php
-final readonly class CreateOrderDTO
-{
-    /**
-     * @param int[] $itemIds
-     */
-    public function __construct(
-        public int $customerId,
-        public array $itemIds,
-        public ?string $promoCode = null,
-    ) {}
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            customerId: (int) $data['customer_id'],
-            itemIds:    array_map('intval', $data['item_ids'] ?? []),
-            promoCode:  $data['promo_code'] ?? null,
-        );
-    }
-}
-```
+- Static factories: `fromArray`, `fromRequest`, `fromModel`
+- **Без зависимостей** (никаких `Service`, `DB`, фасадов)
+- Опционально `toArray()` для сериализации
+- Шаблон: `.ai/templates/backend/dto.md`
 
 ## Module pattern (опционально, для крупных проектов)
 

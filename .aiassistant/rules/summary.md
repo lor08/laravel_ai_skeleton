@@ -22,17 +22,24 @@ apply: always
 - **NEVER** создавай ветки без подтверждения
 - **ALWAYS** предлагай план до реализации (анализ → план → согласование → код → проверки → docs)
 
-## Code style — keypoints
+## Code style — заголовки правил
 
-- `declare(strict_types=1)` в каждом PHP файле
-- `final class` / `final readonly class` по умолчанию
-- Без `// inline-комментариев` в PHP (только PHPDoc-tags и phpstan-аннотации)
-- Только Facades, без global helpers (`view()`, `trans()`, `app()`, ...)
+Полный текст правил — **`.ai/rules/backend/code-style.md`**. Здесь только список, чтобы ты загрузил соответствующий файл по теме.
+
+- declare(strict_types=1) в каждом PHP-файле
+- final class / final readonly class по умолчанию
+- Без inline `//` комментариев
+- Без описаний в PHPDoc (только типы)
+- Только Facades, без global helpers
 - `$request->validated()` вместо `$request->all()`
-- Без вложенных `if` — early return / Guard Clauses
-- DTO на boundaries слоёв
+- Без вложенных `if` (Guard Clauses)
+- DTO на boundaries
+- Class member ordering — constants → properties → methods (public → private)
+- PHP 8.5 идиомы (pipe operator, property hooks)
 
-Полный набор — `.ai/rules/backend/code-style.md`.
+## Eloquent
+
+Без local/global scopes. `tap`, `when`, custom Builder, eager loading. Полный текст — `.ai/rules/backend/eloquent.md`.
 
 ## Workflow
 

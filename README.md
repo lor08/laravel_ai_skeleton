@@ -28,27 +28,42 @@
 - Vue 3 + TypeScript + Inertia + Pinia + Vitest *(переключается)*
 - Sail (Docker)
 
-## Старт
+## Требования
+
+- **Bash 4+** (для `init.sh`)
+- **`jq`** (для скрипта инициализации и для shell-хуков `.claude/hooks/*.sh`)
+  - macOS: `brew install jq`
+  - Debian / Ubuntu: `sudo apt-get install jq`
+  - Без `jq` хуки молча провалятся, и `init.sh` не сможет править `composer.json` / `.mcp.json`
+- **PHP 8.5+** и **Composer 2** (для последующего `composer install`)
+- **Docker** + Docker Compose (если используешь Sail; необязательно при native-режиме)
+
+## Старт (новый проект)
 
 ```bash
 git clone <this-repo> my-app && cd my-app
-./init.sh                                  # интерактивная настройка
-composer install
+./init.sh                       # интерактивно: подставит плейсхолдеры,
+                                # установит Laravel-скелет, настроит git
+composer install                # установит зависимости (Laravel + наш набор: Pest, Larastan, ECS)
 ./vendor/bin/sail up -d
-./vendor/bin/sail bin pest --arch          # проверить базовые правила
+./vendor/bin/sail bin pest --arch   # проверить базовые правила
 ```
+
+> **Важно:** запускай `init.sh` **до** `composer install`. До init `composer.json` содержит
+> плейсхолдер `<PROJECT-NAMESPACE>\\` — `composer install` упадёт с ошибкой автозагрузки.
 
 `init.sh` спросит:
 
-- Имя проекта
+- Имя проекта, namespace, домен (для `.env`)
 - Префикс тикетов (например, `PROJ`)
 - Главную ветку (`main` / `production`)
-- Имя контейнера / runtime (`./vendor/bin/sail` по умолчанию)
+- Sail или собственный docker-контейнер
 - Драйвер БД (mysql / pgsql / sqlite)
-- Frontend стек (vue / react / livewire / blade)
-- Включить ли Rector, mutation testing, runbook
+- Frontend стек (vue / react / livewire / blade / none)
+- Установить ли Laravel-скелет (`composer create-project laravel/laravel`)
+- Включить ли Rector, mutation testing, runbook, Laravel Boost MCP
 
-После прогона плейсхолдеры заменены, лишние файлы удалены, `git init` сделан.
+После прогона: плейсхолдеры заменены, лишние файлы удалены, Laravel-скелет (если выбран) установлен, git-хуки настроены.
 
 ## Ручной режим без `init.sh`
 
